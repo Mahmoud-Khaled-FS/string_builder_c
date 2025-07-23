@@ -24,7 +24,7 @@ StringBuilder *sb_from_string(char *string);
 
 void sb_valid_index(StringBuilder *sb, size_t index, char *fn_name);
 
-char sb_check_capacity(StringBuilder *sb, size_t textSize);
+char sb_check_capacity(StringBuilder *sb, size_t text_size);
 
 char *sb_to_string(StringBuilder *sb);
 
@@ -52,11 +52,16 @@ void sb_trim_left(StringBuilder *sb);
 
 void sb_trim(StringBuilder *sb);
 
-long sb_index_of(StringBuilder *sb, char *searchText);
+long sb_index_of(StringBuilder *sb, char *search_text);
+
+long sb_last_index_of(StringBuilder *sb, char *search_text);
+
+long *sb_all_index_of(StringBuilder *sb, char *search_text, int *count);
 
 char sb_start_with(StringBuilder *sb, char *text);
 
 char sb_end_with(StringBuilder *sb, char *text);
 
-char sb_equals(StringBuilder *sb, char *compString);
+char sb_equals(StringBuilder *sb, char *comp_string);
+
 #endif

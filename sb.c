@@ -36,9 +36,9 @@ void sb_valid_index(StringBuilder *sb, size_t index, char *fn_name)
   }
 }
 
-char sb_check_capacity(StringBuilder *sb, size_t textSize)
+char sb_check_capacity(StringBuilder *sb, size_t text_size)
 {
-  if (sb->cap > sb->len + textSize)
+  if (sb->cap > sb->len + text_size)
   {
     return 1;
   }
@@ -54,11 +54,10 @@ char sb_check_capacity(StringBuilder *sb, size_t textSize)
   {
     return 0;
   }
-  if (sb->cap < textSize)
+  if (sb->cap < text_size)
   {
-    sb->cap += textSize;
+    sb->cap += text_size;
   }
-  printf("INC CAP: %zu\n", sb->cap);
   sb->data = realloc(sb->data, sb->cap * sizeof(char));
   if (!sb->data)
   {
@@ -83,7 +82,6 @@ void sb_free(StringBuilder *sb)
 
 int sb_push_str(StringBuilder *sb, char *text)
 {
-  printf("PUSH: %s\n", text);
   size_t textSize = strlen(text);
   if (!sb_check_capacity(sb, textSize + 1))
     return 0;
@@ -237,9 +235,8 @@ void _compute_lsa_array(char *pat, int M, int *lps)
     }
   }
 }
-long _kmp_Search(char *pat, char *txt)
+long *_kmp_Search(char *pat, char *txt, int *count)
 {
-  printf("%s, %s\n", pat, txt);
   int M = strlen(pat);
   int N = strlen(txt);
 
@@ -249,7 +246,8 @@ long _kmp_Search(char *pat, char *txt)
   _compute_lsa_array(pat, M, lps);
 
   int i = 0;
-  long index = -1;
+  long *index = (long *)malloc(sizeof(long) * N);
+  *count = 0;
   while (i < N)
   {
     if (pat[j] == txt[i])
@@ -259,8 +257,8 @@ long _kmp_Search(char *pat, char *txt)
     }
     if (j == M)
     {
-      index = i - j;
-      break;
+      index[*count] = i - j;
+      (*count)++;
       j = lps[j - 1];
     }
     else if (pat[j] != txt[i])
@@ -275,9 +273,35 @@ long _kmp_Search(char *pat, char *txt)
   return index;
 }
 
-long sb_index_of(StringBuilder *sb, char *searchText)
+long sb_index_of(StringBuilder *sb, char *search_text)
 {
-  return _kmp_Search(searchText, sb_to_string(sb));
+  int count;
+  long *indexs = _kmp_Search(search_text, sb_to_string(sb), &count);
+  if (count == 0)
+  {
+    return -1;
+  }
+  long index = indexs[0];
+  free(indexs);
+  return index;
+}
+
+long sb_last_index_of(StringBuilder *sb, char *search_text)
+{
+  int count;
+  long *indexs = _kmp_Search(search_text, sb_to_string(sb), &count);
+  if (count == 0)
+  {
+    return -1;
+  }
+  long index = indexs[count - 1];
+  free(indexs);
+  return index;
+}
+
+long *sb_all_index_of(StringBuilder *sb, char *search_text, int *count)
+{
+  return _kmp_Search(search_text, sb_to_string(sb), &count);
 }
 
 char sb_start_with(StringBuilder *sb, char *text)
@@ -311,9 +335,9 @@ char sb_end_with(StringBuilder *sb, char *text)
   return 1;
 }
 
-char sb_equals(StringBuilder *sb, char *compString)
+char sb_equals(StringBuilder *sb, char *comp_string)
 {
-  return sb_to_string(sb) == compString;
+  return sb_to_string(sb) == comp_string;
 }
 
 int main()
@@ -337,9 +361,12 @@ int main()
   sb_push_str(sb, "abc");
   // sb_delete(sb, 2, sb->len);
   // push_sb(sb, "hello world\n");
-  char *searchText = "abc";
+  char *searchText = "l";
   long index = sb_index_of(sb, searchText);
-  printf("index of (%s): %ld\n", searchText, index);
+  printf("start index of (%s): %ld\n", searchText, index);
+  long last_index = sb_last_index_of(sb, searchText);
+  printf("last index of (%s): %ld\n", searchText, last_index);
+
   // sb_slice(sb, index + 1, index + 3);
   printf("%s\nlen: %zu, cap: %zu\n", sb_to_string(sb), sb->len, sb->cap);
 
