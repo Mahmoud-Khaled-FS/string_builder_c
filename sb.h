@@ -57,4 +57,6 @@ long sb_index_of(StringBuilder *sb, char *searchText);
 char sb_start_with(StringBuilder *sb, char *text);
 
 char sb_end_with(StringBuilder *sb, char *text);
+
+char sb_equals(StringBuilder *sb, char *compString);
 #endif
