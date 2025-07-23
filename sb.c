@@ -311,6 +311,11 @@ char sb_end_with(StringBuilder *sb, char *text)
   return 1;
 }
 
+char sb_equals(StringBuilder *sb, char *compString)
+{
+  return sb_to_string(sb) == compString;
+}
+
 int main()
 {
   StringBuilder *sb = sb_from_string("hello  ");
