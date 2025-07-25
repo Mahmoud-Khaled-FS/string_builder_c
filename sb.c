@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 StringBuilder *sb_init_cap(size_t cap)
 {
@@ -301,7 +302,7 @@ long sb_last_index_of(StringBuilder *sb, char *search_text)
 
 long *sb_all_index_of(StringBuilder *sb, char *search_text, int *count)
 {
-  return _kmp_Search(search_text, sb_to_string(sb), &count);
+  return _kmp_Search(search_text, sb_to_string(sb), count);
 }
 
 char sb_start_with(StringBuilder *sb, char *text)
@@ -340,37 +341,123 @@ char sb_equals(StringBuilder *sb, char *comp_string)
   return sb_to_string(sb) == comp_string;
 }
 
+char sb_insert_at(StringBuilder *sb, char *text, size_t index)
+{
+  sb_valid_index(sb, index, "sb_insert_at");
+  size_t textSize = strlen(text);
+  if (!sb_check_capacity(sb, textSize + 1))
+    return 0;
+  // Shift the existing chars to right
+  memmove(sb->data + index + textSize, sb->data + index, index + sb->len);
+  // insert new text
+  memcpy(sb->data + index, text, textSize);
+  sb->len += textSize;
+  sb->data[sb->len] = '\0';
+  return 1;
+}
+
+char sb_reverse(StringBuilder *sb)
+{
+  if (!sb || sb->len == 0)
+    return 0;
+  size_t left = 0;
+  size_t right = sb->len - 1;
+
+  while (left < right)
+  {
+    char temp = sb->data[right];
+    sb->data[right] = sb->data[left];
+    sb->data[left] = temp;
+    left++;
+    right--;
+  }
+  return 1;
+}
+
+void sb_upper(StringBuilder *sb)
+{
+  SB_VALIDATE(sb);
+  for (size_t i = 0; i < sb->len; ++i)
+  {
+    sb->data[i] = toupper((unsigned char)sb->data[i]);
+  }
+}
+
+void sb_lower(StringBuilder *sb)
+{
+  SB_VALIDATE(sb);
+  for (size_t i = 0; i < sb->len; ++i)
+  {
+    sb->data[i] = tolower((unsigned char)sb->data[i]);
+  }
+}
+
+void sb_print(StringBuilder *sb)
+{
+  if (!sb || !sb->data)
+  {
+    printf("(null)");
+    return;
+  }
+  printf("%s", sb_to_string(sb));
+}
+
+void sb_println(StringBuilder *sb)
+{
+  if (!sb || !sb->data)
+  {
+    printf("(null)\n");
+    return;
+  }
+  printf("%s\n", sb_to_string(sb));
+}
+
+void sb_debug(StringBuilder *sb)
+{
+  if (!sb)
+  {
+    printf("(null)\n");
+    return;
+  }
+  printf("[DEBUG]>%s\n[DEBUG]>len: %zu, cap: %zu\n", sb_to_string(sb), sb->len, sb->cap);
+}
+
 int main()
 {
-  StringBuilder *sb = sb_from_string("hello  ");
+  StringBuilder *sb = sb_from_string("hello");
+  sb_insert_at(sb, "text", 2);
+  sb_upper(sb);
+  sb_println(sb);
+  sb_lower(sb);
+  sb_reverse(sb);
+
   // StringBuilder *sb = sb_init(64);
   // sb_push_str(sb, "    hello\n    ");
   // sb_trim(sb);
   // sb_trim_right(sb);
   // sb_trim_left(sb);
   // sb_clear(sb);
-  for (int i = 0; i < 100; i++)
-  {
-    sb_push_str(sb, "number: ");
-    sb_push_int(sb, i);
-    sb_push_format(sb, " format %d", i);
-    sb_push_str(sb, "\n");
-  }
+  // for (int i = 0; i < 100; i++)
+  // {
+  //   sb_push_str(sb, "number: ");
+  //   sb_push_int(sb, i);
+  //   sb_push_format(sb, " format %d", i);
+  //   sb_push_str(sb, "\n");
+  // }
   // sb_delete(sb, 0, 100);
   // sb_delete(sb, 1, 3);
-  sb_push_str(sb, "abc");
-  // sb_delete(sb, 2, sb->len);
-  // push_sb(sb, "hello world\n");
-  char *searchText = "l";
-  long index = sb_index_of(sb, searchText);
-  printf("start index of (%s): %ld\n", searchText, index);
-  long last_index = sb_last_index_of(sb, searchText);
-  printf("last index of (%s): %ld\n", searchText, last_index);
+  // sb_push_str(sb, "abc");
+  // // sb_delete(sb, 2, sb->len);
+  // // push_sb(sb, "hello world\n");
+  // char *searchText = "l";
+  // long index = sb_index_of(sb, searchText);
+  // printf("start index of (%s): %ld\n", searchText, index);
+  // long last_index = sb_last_index_of(sb, searchText);
+  // printf("last index of (%s): %ld\n", searchText, last_index);
 
-  // sb_slice(sb, index + 1, index + 3);
-  printf("%s\nlen: %zu, cap: %zu\n", sb_to_string(sb), sb->len, sb->cap);
-
-  printf("string start with hello: %d\n", sb_end_with(sb, "abc"));
+  // // sb_slice(sb, index + 1, index + 3);
+  sb_debug(sb);
+  // printf("string start with hello: %d\n", sb_end_with(sb, "abc"));
 
   return 0;
 }

@@ -11,6 +11,13 @@
 
 #define is_whitespace(c) (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')
 
+#define SB_VALIDATE(sb)       \
+  do                          \
+  {                           \
+    if (!(sb) || !(sb)->data) \
+      return;                 \
+  } while (0)
+
 typedef struct
 {
   char *data;
@@ -63,5 +70,19 @@ char sb_start_with(StringBuilder *sb, char *text);
 char sb_end_with(StringBuilder *sb, char *text);
 
 char sb_equals(StringBuilder *sb, char *comp_string);
+
+char sb_insert_at(StringBuilder *sb, char *text, size_t index);
+
+char sb_reverse(StringBuilder *sb);
+
+void sb_upper(StringBuilder *sb);
+
+void sb_lower(StringBuilder *sb);
+
+void sb_print(StringBuilder *sb);
+
+void sb_println(StringBuilder *sb);
+
+void sb_debug(StringBuilder *sb);
 
 #endif
