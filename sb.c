@@ -167,7 +167,7 @@ char sb_char_at(StringBuilder *sb, size_t index)
 
 void sb_slice(StringBuilder *sb, size_t start, size_t end)
 {
-  sb_valid_index(sb, start, "sb_delete");
+  sb_valid_index(sb, start, "sb_slice");
   if (end > sb->len)
     end = sb->len;
   if (start > end)
@@ -176,11 +176,12 @@ void sb_slice(StringBuilder *sb, size_t start, size_t end)
   }
 
   size_t removedItemsCount = end - start;
-  for (size_t i = end; i < sb->len; i++)
-  {
-    sb->data[start + (i - end)] = sb->data[i];
-  }
+  memmove(
+      sb->data + start,
+      sb->data + end,
+      (sb->len - end) * sizeof(char));
   sb->len -= removedItemsCount;
+  sb->data[sb->len] = '\0';
 }
 
 void sb_clear(StringBuilder *sb)
