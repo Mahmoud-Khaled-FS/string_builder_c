@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <assert.h>
 
 StringBuilder *sb_init_cap(size_t cap)
 {
@@ -25,6 +26,30 @@ StringBuilder *sb_from_string(char *string)
 {
   StringBuilder *sb = sb_init(MAX(strlen(string), INITIAL_CAPACITY));
   sb_push_str(sb, string);
+  return sb;
+}
+
+StringBuilder *sb_from_file(char *path)
+{
+  FILE *f = fopen(path, "r");
+  if (f == NULL)
+  {
+    return NULL;
+  }
+
+  fseek(f, 0, SEEK_END);
+  long size = ftell(f);
+
+  StringBuilder *sb = sb_init_cap((size_t)size + 1);
+  rewind(f);
+
+  size_t buffer_read_size = fread(sb->data, sizeof(char), sb->cap, f);
+
+  assert(buffer_read_size == size);
+  sb->len = size;
+  sb->data[sb->len] = '\0';
+
+  fclose(f);
   return sb;
 }
 
@@ -73,15 +98,17 @@ char *sb_to_string(StringBuilder *sb)
   return sb->data;
 }
 
-void sb_free(StringBuilder *sb)
+void sb_free(StringBuilder **sb)
 {
-  if (sb == NULL)
+  if (*sb == NULL)
     return;
-  free(sb->data);
-  free(sb);
+  free((*sb)->data);
+  free((*sb));
+  *sb = NULL;
+  assert(*sb == NULL);
 }
 
-int sb_push_str(StringBuilder *sb, char *text)
+char sb_push_str(StringBuilder *sb, char *text)
 {
   size_t textSize = strlen(text);
   if (!sb_check_capacity(sb, textSize + 1))
@@ -92,12 +119,28 @@ int sb_push_str(StringBuilder *sb, char *text)
   return 1;
 }
 
-int sb_push_int(StringBuilder *sb, int number)
+char sb_push_sb(StringBuilder *dist, StringBuilder *src)
+{
+  if (dist == NULL || src == NULL)
+  {
+    return 0;
+  }
+  return sb_push_str(dist, sb_to_string(src));
+}
+
+char sb_push_sb_free(StringBuilder *dist, StringBuilder **src)
+{
+  char result = sb_push_sb(dist, *src);
+  sb_free(src);
+  return result;
+}
+
+char sb_push_int(StringBuilder *sb, int number)
 {
   return sb_push_format(sb, "%d", number);
 }
 
-int sb_push_format(StringBuilder *sb, const char *format, ...)
+char sb_push_format(StringBuilder *sb, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
@@ -107,7 +150,7 @@ int sb_push_format(StringBuilder *sb, const char *format, ...)
   return sb_push_str(sb, buf);
 }
 
-int sb_replace_char(StringBuilder *sb, char ch, size_t index)
+char sb_replace_char(StringBuilder *sb, char ch, size_t index)
 {
   if (index < 0 || index >= sb->len)
     return 0;
@@ -414,7 +457,7 @@ void sb_println(StringBuilder *sb)
 
 void sb_debug(StringBuilder *sb)
 {
-  if (!sb)
+  if (sb == NULL)
   {
     printf("(null)\n");
     return;
@@ -424,12 +467,15 @@ void sb_debug(StringBuilder *sb)
 
 int main()
 {
-  StringBuilder *sb = sb_from_string("hello");
-  sb_insert_at(sb, "text", 2);
-  sb_upper(sb);
-  sb_println(sb);
-  sb_lower(sb);
-  sb_reverse(sb);
+  StringBuilder *header = sb_from_string("-------------------header-------------------\n");
+  StringBuilder *sb = sb_from_file("./sb.c");
+  sb_push_sb_free(sb, &header);
+  // StringBuilder *sb = sb_from_string("hello");
+  // sb_insert_at(sb, "text", 2);
+  // sb_upper(sb);
+  // sb_println(sb);
+  // sb_lower(sb);
+  // sb_reverse(sb);
 
   // StringBuilder *sb = sb_init(64);
   // sb_push_str(sb, "    hello\n    ");
@@ -457,6 +503,7 @@ int main()
 
   // // sb_slice(sb, index + 1, index + 3);
   sb_debug(sb);
+  sb_debug(header);
   // printf("string start with hello: %d\n", sb_end_with(sb, "abc"));
 
   return 0;

@@ -29,21 +29,27 @@ StringBuilder *sb_init_cap(size_t cap);
 StringBuilder *sb_init();
 StringBuilder *sb_from_string(char *string);
 
+StringBuilder *sb_from_file(char *path);
+
 void sb_valid_index(StringBuilder *sb, size_t index, char *fn_name);
 
 char sb_check_capacity(StringBuilder *sb, size_t text_size);
 
 char *sb_to_string(StringBuilder *sb);
 
-void sb_free(StringBuilder *sb);
+void sb_free(StringBuilder **sb);
 
-int sb_push_str(StringBuilder *sb, char *text);
+char sb_push_str(StringBuilder *sb, char *text);
 
-int sb_push_int(StringBuilder *sb, int number);
+char sb_push_int(StringBuilder *sb, int number);
 
-int sb_push_format(StringBuilder *sb, const char *format, ...);
+char sb_push_format(StringBuilder *sb, const char *format, ...);
 
-int sb_replace_char(StringBuilder *sb, char ch, size_t index);
+char sb_push_sb(StringBuilder *dist, StringBuilder *src);
+
+char sb_push_sb_free(StringBuilder *dist, StringBuilder **src);
+
+char sb_replace_char(StringBuilder *sb, char ch, size_t index);
 
 char sb_char_at(StringBuilder *sb, size_t index);
 
