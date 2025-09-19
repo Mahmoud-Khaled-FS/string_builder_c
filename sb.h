@@ -2,6 +2,7 @@
 #define SB_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define ALPHA_CHARS 256
 #define THRESHOLD_SIZE (1024 * 1024)
@@ -33,23 +34,23 @@ StringBuilder *sb_from_file(char *path);
 
 void sb_valid_index(StringBuilder *sb, size_t index, char *fn_name);
 
-char sb_check_capacity(StringBuilder *sb, size_t text_size);
+bool sb_check_capacity(StringBuilder *sb, size_t text_size);
 
 char *sb_to_string(StringBuilder *sb);
 
 void sb_free(StringBuilder **sb);
 
-char sb_push_str(StringBuilder *sb, char *text);
+bool sb_push_str(StringBuilder *sb, char *text);
 
-char sb_push_int(StringBuilder *sb, int number);
+bool sb_push_int(StringBuilder *sb, int number);
 
-char sb_push_format(StringBuilder *sb, const char *format, ...);
+bool sb_push_format(StringBuilder *sb, const char *format, ...);
 
-char sb_push_sb(StringBuilder *dist, StringBuilder *src);
+bool sb_push_sb(StringBuilder *dist, StringBuilder *src);
 
-char sb_push_sb_free(StringBuilder *dist, StringBuilder **src);
+bool sb_push_sb_free(StringBuilder *dist, StringBuilder **src);
 
-char sb_replace_char(StringBuilder *sb, char ch, size_t index);
+bool sb_replace_char(StringBuilder *sb, char ch, size_t index);
 
 char sb_char_at(StringBuilder *sb, size_t index);
 
@@ -71,15 +72,15 @@ long sb_last_index_of(StringBuilder *sb, char *search_text);
 
 long *sb_all_index_of(StringBuilder *sb, char *search_text, int *count);
 
-char sb_start_with(StringBuilder *sb, char *text);
+bool sb_start_with(StringBuilder *sb, char *text);
 
-char sb_end_with(StringBuilder *sb, char *text);
+bool sb_end_with(StringBuilder *sb, char *text);
 
-char sb_equals(StringBuilder *sb, char *comp_string);
+bool sb_equals(StringBuilder *sb, char *comp_string);
 
-char sb_insert_at(StringBuilder *sb, char *text, size_t index);
+bool sb_insert_at(StringBuilder *sb, char *text, size_t index);
 
-char sb_reverse(StringBuilder *sb);
+bool sb_reverse(StringBuilder *sb);
 
 void sb_upper(StringBuilder *sb);
 

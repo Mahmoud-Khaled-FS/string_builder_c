@@ -62,11 +62,12 @@ void sb_valid_index(StringBuilder *sb, size_t index, char *fn_name)
   }
 }
 
-char sb_check_capacity(StringBuilder *sb, size_t text_size)
+bool sb_check_capacity(StringBuilder *sb, size_t text_size)
 {
+  SB_VALIDATE(sb);
   if (sb->cap > sb->len + text_size)
   {
-    return 1;
+    return true;
   }
   if (sb->cap == 0)
   {
@@ -78,7 +79,7 @@ char sb_check_capacity(StringBuilder *sb, size_t text_size)
   }
   if (sb->cap == 0)
   {
-    return 0;
+    return false;
   }
   if (sb->cap < text_size)
   {
@@ -87,61 +88,66 @@ char sb_check_capacity(StringBuilder *sb, size_t text_size)
   sb->data = realloc(sb->data, sb->cap * sizeof(char));
   if (!sb->data)
   {
-    return 0;
+    return false;
   }
-  return 1;
+  return true;
 }
 
 char *sb_to_string(StringBuilder *sb)
 {
+  if (sb == NULL)
+  {
+    return NULL;
+  }
   sb->data[sb->len] = '\0';
   return sb->data;
 }
 
 void sb_free(StringBuilder **sb)
 {
-  if (*sb == NULL)
-    return;
   free((*sb)->data);
   free((*sb));
   *sb = NULL;
   assert(*sb == NULL);
 }
 
-char sb_push_str(StringBuilder *sb, char *text)
+bool sb_push_str(StringBuilder *sb, char *text)
 {
+  SB_VALIDATE(sb);
   size_t textSize = strlen(text);
   if (!sb_check_capacity(sb, textSize + 1))
-    return 0;
+    return false;
   memcpy(sb->data + sb->len, text, textSize);
   sb->len += textSize;
   sb->data[sb->len] = '\0';
-  return 1;
+  return true;
 }
 
-char sb_push_sb(StringBuilder *dist, StringBuilder *src)
+bool sb_push_sb(StringBuilder *dist, StringBuilder *src)
 {
-  if (dist == NULL || src == NULL)
-  {
-    return 0;
-  }
+  SB_VALIDATE(dist);
+  SB_VALIDATE(src);
   return sb_push_str(dist, sb_to_string(src));
 }
 
-char sb_push_sb_free(StringBuilder *dist, StringBuilder **src)
+bool sb_push_sb_free(StringBuilder *dist, StringBuilder **src)
 {
+  SB_VALIDATE(dist);
+  SB_VALIDATE(*src);
   char result = sb_push_sb(dist, *src);
   sb_free(src);
   return result;
 }
 
-char sb_push_int(StringBuilder *sb, int number)
+bool sb_push_int(StringBuilder *sb, int number)
 {
+  SB_VALIDATE(sb);
   return sb_push_format(sb, "%d", number);
 }
 
-char sb_push_format(StringBuilder *sb, const char *format, ...)
+bool sb_push_format(StringBuilder *sb, const char *format, ...)
 {
+  SB_VALIDATE(sb);
   va_list args;
   va_start(args, format);
   char buf[4095];
@@ -150,16 +156,19 @@ char sb_push_format(StringBuilder *sb, const char *format, ...)
   return sb_push_str(sb, buf);
 }
 
-char sb_replace_char(StringBuilder *sb, char ch, size_t index)
+bool sb_replace_char(StringBuilder *sb, char ch, size_t index)
 {
+  SB_VALIDATE(sb);
   if (index < 0 || index >= sb->len)
-    return 0;
+    return false;
   sb->data[index] = ch;
-  return 1;
+  return true;
 }
 
 char sb_char_at(StringBuilder *sb, size_t index)
 {
+  if (sb == NULL)
+    return '\0';
   sb_valid_index(sb, index, "sb_char_at");
 
   return sb->data[index];
@@ -349,61 +358,64 @@ long *sb_all_index_of(StringBuilder *sb, char *search_text, int *count)
   return _kmp_Search(search_text, sb_to_string(sb), count);
 }
 
-char sb_start_with(StringBuilder *sb, char *text)
+bool sb_start_with(StringBuilder *sb, char *text)
 {
+  SB_VALIDATE(sb);
   size_t textSize = strlen(text);
   if (textSize > sb->len)
-    return 0;
+    return false;
   for (size_t i = 0; i < textSize; i++)
   {
     if (sb_char_at(sb, i) != text[i])
     {
-      return 0;
+      return false;
     }
   }
-  return 1;
+  return true;
 }
 
-char sb_end_with(StringBuilder *sb, char *text)
+bool sb_end_with(StringBuilder *sb, char *text)
 {
+  SB_VALIDATE(sb);
   size_t textSize = strlen(text);
   if (textSize > sb->len)
-    return 0;
+    return false;
   for (long i = textSize - 1; i >= 0; i--)
   {
     size_t offset = textSize - i;
     if (sb_char_at(sb, sb->len - offset) != text[i])
     {
-      return 0;
+      return true;
     }
   }
-  return 1;
+  return false;
 }
 
-char sb_equals(StringBuilder *sb, char *comp_string)
+bool sb_equals(StringBuilder *sb, char *comp_string)
 {
+  SB_VALIDATE(sb);
   return sb_to_string(sb) == comp_string;
 }
 
-char sb_insert_at(StringBuilder *sb, char *text, size_t index)
+bool sb_insert_at(StringBuilder *sb, char *text, size_t index)
 {
+  SB_VALIDATE(sb);
   sb_valid_index(sb, index, "sb_insert_at");
   size_t textSize = strlen(text);
   if (!sb_check_capacity(sb, textSize + 1))
-    return 0;
+    return false;
   // Shift the existing chars to right
   memmove(sb->data + index + textSize, sb->data + index, index + sb->len);
   // insert new text
   memcpy(sb->data + index, text, textSize);
   sb->len += textSize;
   sb->data[sb->len] = '\0';
-  return 1;
+  return true;
 }
 
-char sb_reverse(StringBuilder *sb)
+bool sb_reverse(StringBuilder *sb)
 {
-  if (!sb || sb->len == 0)
-    return 0;
+  SB_VALIDATE(sb);
   size_t left = 0;
   size_t right = sb->len - 1;
 
@@ -415,7 +427,7 @@ char sb_reverse(StringBuilder *sb)
     left++;
     right--;
   }
-  return 1;
+  return true;
 }
 
 void sb_upper(StringBuilder *sb)
@@ -464,48 +476,4 @@ void sb_debug(StringBuilder *sb)
     return;
   }
   printf("[DEBUG]>%s\n[DEBUG]>len: %zu, cap: %zu\n", sb_to_string(sb), sb->len, sb->cap);
-}
-
-int main()
-{
-  StringBuilder *header = sb_from_string("-------------------header-------------------\n");
-  StringBuilder *sb = sb_from_file("./sb.c");
-  sb_push_sb_free(sb, &header);
-  // StringBuilder *sb = sb_from_string("hello");
-  // sb_insert_at(sb, "text", 2);
-  // sb_upper(sb);
-  // sb_println(sb);
-  // sb_lower(sb);
-  // sb_reverse(sb);
-
-  // StringBuilder *sb = sb_init(64);
-  // sb_push_str(sb, "    hello\n    ");
-  // sb_trim(sb);
-  // sb_trim_right(sb);
-  // sb_trim_left(sb);
-  // sb_clear(sb);
-  // for (int i = 0; i < 100; i++)
-  // {
-  //   sb_push_str(sb, "number: ");
-  //   sb_push_int(sb, i);
-  //   sb_push_format(sb, " format %d", i);
-  //   sb_push_str(sb, "\n");
-  // }
-  // sb_delete(sb, 0, 100);
-  // sb_delete(sb, 1, 3);
-  // sb_push_str(sb, "abc");
-  // // sb_delete(sb, 2, sb->len);
-  // // push_sb(sb, "hello world\n");
-  // char *searchText = "l";
-  // long index = sb_index_of(sb, searchText);
-  // printf("start index of (%s): %ld\n", searchText, index);
-  // long last_index = sb_last_index_of(sb, searchText);
-  // printf("last index of (%s): %ld\n", searchText, last_index);
-
-  // // sb_slice(sb, index + 1, index + 3);
-  sb_debug(sb);
-  sb_debug(header);
-  // printf("string start with hello: %d\n", sb_end_with(sb, "abc"));
-
-  return 0;
 }
